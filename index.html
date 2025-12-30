@@ -1,637 +1,812 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BUDGET NEMESIS - Arcade Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title>BUDGET NEMESIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --arcade-bg: #000000;
-            --arcade-green: #00ff00;
-            --arcade-red: #ff0000;
-            --arcade-yellow: #ffff00;
-            --arcade-cyan: #00ffff;
-            --arcade-magenta: #ff00ff;
-            --arcade-white: #ffffff;
+            --neon-pink: #ff006e;
+            --neon-cyan: #00f5ff;
+            --neon-purple: #8338ec;
+            --neon-red: #ff0054;
+            --neon-yellow: #ffbe0b;
+            --dark-bg: #0d0221;
+            --darker-bg: #080118;
         }
 
         body {
-            font-family: 'Press Start 2P', monospace;
-            background: var(--arcade-bg);
-            color: var(--arcade-green);
+            font-family: 'Orbitron', sans-serif;
+            background: 
+                linear-gradient(180deg, var(--darker-bg) 0%, var(--dark-bg) 50%, #1a0b2e 100%);
+            color: var(--neon-cyan);
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        .scanlines {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
-            pointer-events: none; z-index: 9999;
+        /* VHS/CRT Effects */
+        .vhs-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 0, 0, 0.1),
+                    rgba(0, 0, 0, 0.1) 1px,
+                    transparent 1px,
+                    transparent 3px
+                );
+            animation: vhsNoise 0.5s infinite;
         }
 
-        .crt-effect {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.3) 100%);
-            pointer-events: none; z-index: 9998;
+        @keyframes vhsNoise {
+            0%, 100% { opacity: 0.05; }
+            50% { opacity: 0.1; }
         }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; }
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 9998;
+        }
 
-        .arcade-header {
-            text-align: center; padding: 20px; margin-bottom: 30px;
-            border: 4px solid var(--arcade-yellow); background: #000; position: relative;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
         }
 
         h1 {
-            font-size: 2rem; color: var(--arcade-yellow);
-            text-shadow: 4px 4px 0 var(--arcade-red); margin-bottom: 15px;
-            animation: titleBlink 2s infinite;
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--neon-pink);
+            text-shadow: 
+                0 0 10px var(--neon-pink),
+                0 0 20px var(--neon-pink),
+                0 0 40px var(--neon-pink),
+                0 0 80px var(--neon-red),
+                0 8px 0 rgba(0,0,0,0.5);
+            letter-spacing: 8px;
+            animation: flicker 3s infinite;
+            margin-bottom: 10px;
         }
 
-        @keyframes titleBlink {
-            0%, 49%, 51%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow: 
+                    0 0 10px var(--neon-pink),
+                    0 0 20px var(--neon-pink),
+                    0 0 40px var(--neon-pink),
+                    0 0 80px var(--neon-red);
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
         }
 
-        .subtitle { font-size: 0.8rem; color: var(--arcade-cyan); letter-spacing: 3px; }
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+            letter-spacing: 4px;
+        }
 
-        .month-display {
-            background: #000; border: 3px solid var(--arcade-magenta);
-            padding: 15px; text-align: center; margin-bottom: 20px;
-            font-size: 1.2rem; color: var(--arcade-magenta);
+        .month-banner {
+            background: linear-gradient(90deg, transparent, var(--neon-purple) 20%, var(--neon-purple) 80%, transparent);
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--neon-yellow);
+            text-shadow: 0 0 20px var(--neon-yellow);
+            margin-bottom: 30px;
+            border-top: 2px solid var(--neon-cyan);
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(131, 56, 236, 0.5);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(13, 2, 33, 0.9), rgba(26, 11, 46, 0.9));
+            border: 2px solid var(--neon-cyan);
+            padding: 25px;
+            text-align: center;
+            box-shadow: 
+                0 0 20px rgba(0, 245, 255, 0.3),
+                inset 0 0 20px rgba(0, 245, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 0 40px rgba(0, 245, 255, 0.6),
+                inset 0 0 30px rgba(0, 245, 255, 0.2);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--neon-purple);
+            text-shadow: 0 0 10px var(--neon-purple);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--neon-pink);
+            text-shadow: 0 0 20px var(--neon-pink);
         }
 
         .battle-screen {
-            background: #000; border: 4px solid var(--arcade-green);
-            padding: 30px; margin-bottom: 30px; min-height: 400px; position: relative;
+            background: linear-gradient(135deg, rgba(13, 2, 33, 0.95), rgba(8, 1, 24, 0.95));
+            border: 3px solid var(--neon-pink);
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 
+                0 0 50px rgba(255, 0, 110, 0.5),
+                inset 0 0 50px rgba(255, 0, 110, 0.1);
+            position: relative;
         }
 
-        .health-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
-
-        .player-side, .nemesis-side { text-align: center; }
-
-        .character-label {
-            font-size: 0.7rem; margin-bottom: 10px; letter-spacing: 2px;
+        .health-bars {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
         }
 
-        .player-side .character-label { color: var(--arcade-cyan); }
-        .nemesis-side .character-label { color: var(--arcade-red); }
+        .health-label {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .player-label { color: var(--neon-cyan); }
+        .nemesis-label { color: var(--neon-red); }
 
         .health-bar-container {
-            background: #111; border: 3px solid; height: 30px;
-            position: relative; overflow: hidden;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid;
+            height: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
 
-        .player-side .health-bar-container { border-color: var(--arcade-cyan); }
-        .nemesis-side .health-bar-container { border-color: var(--arcade-red); }
+        .player-bar { border-color: var(--neon-cyan); }
+        .nemesis-bar { border-color: var(--neon-red); }
 
-        .health-bar-fill {
-            height: 100%; transition: width 0.5s; display: flex;
-            align-items: center; justify-content: center; font-size: 0.6rem;
+        .health-fill {
+            height: 100%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
             position: relative;
             z-index: 2;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px #000, -1px -1px 2px #000, 1px -1px 2px #000, -1px 1px 2px #000;
+            text-shadow: 2px 2px 4px #000;
         }
 
         .player-health {
-            background: repeating-linear-gradient(90deg, var(--arcade-cyan) 0px, var(--arcade-cyan) 10px, transparent 10px, transparent 20px);
-            color: var(--arcade-cyan);
+            background: linear-gradient(90deg, var(--neon-cyan), #00d4ff);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            color: #fff;
         }
 
         .nemesis-health {
-            background: repeating-linear-gradient(90deg, var(--arcade-red) 0px, var(--arcade-red) 10px, transparent 10px, transparent 20px);
-            color: var(--arcade-red);
+            background: linear-gradient(90deg, var(--neon-red), #ff4466);
+            box-shadow: 0 0 20px var(--neon-red);
+            color: #fff;
         }
 
-        /* SCARY NEMESIS - Built from scratch */
-        .pixel-character { width: 220px; height: 220px; margin: 20px auto; position: relative; }
-
-        .nemesis-sprite {
-            width: 100%; height: 100%;
-            background: 
-                linear-gradient(180deg, 
-                    #cc0000 0%, 
-                    var(--arcade-red) 40%, 
-                    #990000 100%);
+        /* Stranger Things Style Monster */
+        .monster-container {
+            width: 300px;
+            height: 300px;
+            margin: 30px auto;
             position: relative;
-            animation: nemesisFloat 2.5s ease-in-out infinite;
+            filter: drop-shadow(0 0 40px var(--neon-red));
+        }
+
+        .monster {
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at center, 
+                    var(--neon-red) 0%,
+                    #aa0030 40%,
+                    #660020 100%);
+            position: relative;
+            border-radius: 40% 40% 45% 45%;
+            animation: monsterPulse 2s ease-in-out infinite;
             box-shadow: 
-                inset -25px -25px 0 rgba(0,0,0,0.4),
-                inset 15px 15px 0 rgba(255,0,0,0.3),
-                0 0 0 6px #000,
-                0 0 60px rgba(255,0,0,0.8);
+                inset -30px -30px 50px rgba(0,0,0,0.5),
+                inset 20px 20px 40px rgba(255,0,0,0.3),
+                0 0 60px var(--neon-red);
         }
 
-        @keyframes nemesisFloat {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-12px) scale(1.02); }
+        @keyframes monsterPulse {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.05) translateY(-15px); }
         }
 
-        .nemesis-sprite.damaged {
-            animation: damageShake 0.5s;
+        .monster.damaged {
+            animation: monsterShake 0.5s;
         }
 
-        @keyframes damageShake {
-            0%, 100% { transform: translateX(0); opacity: 1; }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); opacity: 0.7; }
-            20%, 40%, 60%, 80% { transform: translateX(5px); opacity: 0.3; }
+        @keyframes monsterShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px) rotate(-2deg); }
+            20%, 40%, 60%, 80% { transform: translateX(10px) rotate(2deg); }
         }
 
-        /* EVIL GLOWING EYES */
-        .eye-container {
+        /* Glowing Eyes */
+        .eyes {
             position: absolute;
-            top: 55px;
+            top: 80px;
             left: 50%;
             transform: translateX(-50%);
-            width: 140px;
+            width: 180px;
             display: flex;
             justify-content: space-between;
         }
 
         .eye {
-            width: 45px;
-            height: 45px;
-            background: var(--arcade-yellow);
-            border: 5px solid #000;
-            position: relative;
+            width: 60px;
+            height: 60px;
+            background: 
+                radial-gradient(circle at 30% 30%, 
+                    var(--neon-yellow) 0%,
+                    var(--neon-red) 60%,
+                    #660000 100%);
+            border-radius: 50%;
             box-shadow: 
-                0 0 20px var(--arcade-yellow),
-                inset 0 0 10px rgba(255,255,0,0.5);
-            animation: eyePulse 2s infinite;
+                0 0 30px var(--neon-yellow),
+                0 0 60px var(--neon-red),
+                inset 0 0 20px rgba(0,0,0,0.5);
+            animation: eyeGlow 2s infinite;
+            position: relative;
         }
 
-        @keyframes eyePulse {
+        @keyframes eyeGlow {
             0%, 100% { 
-                box-shadow: 0 0 20px var(--arcade-yellow), inset 0 0 10px rgba(255,255,0,0.5);
-                transform: scale(1);
+                box-shadow: 
+                    0 0 30px var(--neon-yellow),
+                    0 0 60px var(--neon-red);
             }
             50% { 
-                box-shadow: 0 0 40px var(--arcade-yellow), 0 0 60px rgba(255,255,0,0.8), inset 0 0 15px rgba(255,255,0,0.8);
-                transform: scale(1.05);
+                box-shadow: 
+                    0 0 50px var(--neon-yellow),
+                    0 0 100px var(--neon-red),
+                    0 0 120px rgba(255,0,0,0.5);
             }
         }
 
         .pupil {
             position: absolute;
-            width: 20px;
-            height: 20px;
-            background: var(--arcade-red);
-            bottom: 4px;
+            width: 25px;
+            height: 25px;
+            background: #000;
+            border-radius: 50%;
+            bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
-            box-shadow: 
-                0 0 10px var(--arcade-red),
-                inset 0 0 5px #000;
-            animation: pupilGlow 1.5s infinite;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
         }
 
-        @keyframes pupilGlow {
-            0%, 100% { background: var(--arcade-red); }
-            50% { background: #ff3333; box-shadow: 0 0 20px var(--arcade-red); }
-        }
-
-        /* ANGRY EYEBROWS - V-shaped scowl */
+        /* Angry Eyebrows */
         .eyebrow-left {
             position: absolute;
-            top: 42px;
-            left: 28px;
-            width: 55px;
-            height: 10px;
-            background: #000;
-            transform-origin: right center;
-            transform: rotate(20deg);
-            box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+            top: 60px;
+            left: 45px;
+            width: 70px;
+            height: 12px;
+            background: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
+            transform: rotate(15deg);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
         }
 
         .eyebrow-right {
             position: absolute;
-            top: 42px;
-            right: 28px;
-            width: 55px;
-            height: 10px;
+            top: 60px;
+            right: 45px;
+            width: 70px;
+            height: 12px;
+            background: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
+            transform: rotate(-15deg);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        /* Mouth with fangs */
+        .mouth {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 45px;
             background: #000;
-            transform-origin: left center;
-            transform: rotate(-20deg);
-            box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+            border-radius: 0 0 70px 70px / 0 0 50px 50px;
+            box-shadow: 
+                inset 0 -20px 30px rgba(255,0,0,0.6),
+                0 5px 15px rgba(0,0,0,0.8);
+            border: 3px solid #000;
+            border-top: none;
+            z-index: 1;
         }
 
-        /* MENACING HORNS */
-        .horn-left {
+        .fangs {
             position: absolute;
-            top: -35px;
-            left: 30px;
-            width: 0;
-            height: 0;
-            border-left: 18px solid transparent;
-            border-right: 18px solid transparent;
-            border-bottom: 45px solid var(--arcade-yellow);
-            transform: rotate(-10deg);
-            filter: drop-shadow(0 5px 0 #000) drop-shadow(0 0 15px var(--arcade-yellow));
-        }
-
-        .horn-right {
-            position: absolute;
-            top: -35px;
-            right: 30px;
-            width: 0;
-            height: 0;
-            border-left: 18px solid transparent;
-            border-right: 18px solid transparent;
-            border-bottom: 45px solid var(--arcade-yellow);
-            transform: rotate(10deg);
-            filter: drop-shadow(0 5px 0 #000) drop-shadow(0 0 15px var(--arcade-yellow));
-        }
-
-        /* SHARP FANGS - INSIDE THE MOUTH */
-        .fang-row {
-            position: absolute;
-            bottom: 38px;
+            bottom: 62px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 12px;
-            z-index: 5;
+            gap: 20px;
+            z-index: 2;
         }
 
         .fang {
             width: 0;
             height: 0;
-            border-left: 11px solid transparent;
-            border-right: 11px solid transparent;
-            border-top: 24px solid var(--arcade-white);
-            filter: drop-shadow(2px 2px 0 #000);
-            animation: fangShine 3s infinite;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 35px solid #fff;
+            filter: drop-shadow(3px 3px 5px rgba(0,0,0,0.8));
+            animation: fangGlint 4s infinite;
         }
 
-        @keyframes fangShine {
-            0%, 85%, 100% { opacity: 1; }
-            90% { opacity: 0.8; }
-            95% { opacity: 1; }
+        @keyframes fangGlint {
+            0%, 90%, 100% { opacity: 1; }
+            95% { opacity: 0.7; }
         }
 
-        /* ANGRY DOWNTURNED MOUTH - actual frown */
-        .mouth {
+        /* Horns */
+        .horn {
             position: absolute;
-            bottom: 35px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 110px;
-            height: 35px;
-            border: 6px solid #000;
-            border-bottom: none;
-            border-radius: 55px 55px 0 0;
-            background: #000;
-            box-shadow: 
-                inset 0 10px 15px rgba(255,0,0,0.6),
-                0 -3px 0 rgba(0,0,0,0.5);
-            z-index: 1;
-        }
-
-        /* SPIKES ON SIDES */
-        .spike-left {
-            position: absolute;
-            left: -18px;
+            top: -20px;
             width: 0;
             height: 0;
-            border-top: 14px solid transparent;
-            border-bottom: 14px solid transparent;
-            border-right: 28px solid var(--arcade-red);
-            filter: drop-shadow(-3px 0 0 #000);
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-bottom: 60px solid var(--neon-yellow);
+            filter: drop-shadow(0 0 20px var(--neon-yellow));
         }
 
-        .spike-left-1 { top: 40%; }
-        .spike-left-2 { top: 55%; }
-        .spike-left-3 { top: 70%; }
+        .horn-left {
+            left: 40px;
+            transform: rotate(-20deg);
+        }
+
+        .horn-right {
+            right: 40px;
+            transform: rotate(20deg);
+        }
+
+        /* Spikes */
+        .spike {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-top: 18px solid transparent;
+            border-bottom: 18px solid transparent;
+            filter: drop-shadow(0 0 10px rgba(170,0,48,0.8));
+        }
+
+        .spike-left {
+            left: -25px;
+            border-right: 35px solid #aa0030;
+        }
+
+        .spike-left-1 { top: 35%; }
+        .spike-left-2 { top: 50%; }
+        .spike-left-3 { top: 65%; }
 
         .spike-right {
-            position: absolute;
-            right: -18px;
-            width: 0;
-            height: 0;
-            border-top: 14px solid transparent;
-            border-bottom: 14px solid transparent;
-            border-left: 28px solid var(--arcade-red);
-            filter: drop-shadow(3px 0 0 #000);
+            right: -25px;
+            border-left: 35px solid #aa0030;
         }
 
-        .spike-right-1 { top: 40%; }
-        .spike-right-2 { top: 55%; }
-        .spike-right-3 { top: 70%; }
+        .spike-right-1 { top: 35%; }
+        .spike-right-2 { top: 50%; }
+        .spike-right-3 { top: 65%; }
 
-        /* Taunt bubble */
-        .taunt-bubble {
+        /* Taunt */
+        .taunt {
             position: absolute;
-            top: -70px;
+            top: -80px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--arcade-yellow);
+            background: var(--neon-yellow);
             color: #000;
-            padding: 12px;
-            border: 4px solid #000;
-            font-size: 0.6rem;
+            padding: 15px 25px;
+            border: 3px solid #000;
+            font-weight: 700;
+            font-size: 0.9rem;
             white-space: nowrap;
-            animation: tauntPop 0.3s;
-            z-index: 10;
-            box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+            box-shadow: 
+                0 0 30px var(--neon-yellow),
+                5px 5px 0 rgba(0,0,0,0.3);
+            animation: tauntBounce 0.4s;
         }
 
-        @keyframes tauntPop {
-            0% { transform: translateX(-50%) scale(0) rotate(-5deg); }
-            50% { transform: translateX(-50%) scale(1.1) rotate(2deg); }
+        @keyframes tauntBounce {
+            0% { transform: translateX(-50%) scale(0) rotate(-10deg); }
+            50% { transform: translateX(-50%) scale(1.1) rotate(5deg); }
             100% { transform: translateX(-50%) scale(1) rotate(0deg); }
         }
 
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
 
         .tab {
-            flex: 1; min-width: 120px; padding: 15px 10px; background: #000;
-            border: 3px solid var(--arcade-green); color: var(--arcade-green);
-            font-size: 0.6rem; cursor: pointer; transition: all 0.2s;
-            text-align: center; letter-spacing: 1px;
+            flex: 1;
+            min-width: 140px;
+            padding: 18px 25px;
+            background: linear-gradient(135deg, rgba(13,2,33,0.9), rgba(26,11,46,0.9));
+            border: 2px solid var(--neon-purple);
+            color: var(--neon-cyan);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(131,56,236,0.3);
         }
 
-        .tab:hover { background: var(--arcade-green); color: #000; transform: scale(1.05); }
+        .tab:hover {
+            background: linear-gradient(135deg, var(--neon-purple), rgba(131,56,236,0.8));
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(131,56,236,0.6);
+        }
 
         .tab.active {
-            background: var(--arcade-yellow); border-color: var(--arcade-yellow);
-            color: #000; animation: tabFlash 1s infinite;
-        }
-
-        @keyframes tabFlash {
-            0%, 49%, 51%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            border-color: var(--neon-pink);
+            color: #fff;
+            box-shadow: 0 0 40px rgba(255,0,110,0.8);
         }
 
         .panel {
-            background: #000; border: 3px solid var(--arcade-green);
-            padding: 20px; margin-bottom: 20px;
+            background: linear-gradient(135deg, rgba(13,2,33,0.95), rgba(8,1,24,0.95));
+            border: 2px solid var(--neon-cyan);
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 
+                0 0 30px rgba(0,245,255,0.3),
+                inset 0 0 30px rgba(0,245,255,0.05);
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: pixelFade 0.3s; }
-
-        @keyframes pixelFade {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
+        .tab-content {
+            display: none;
         }
 
-        .input-group { margin-bottom: 15px; }
+        .tab-content.active {
+            display: block;
+            animation: slideIn 0.4s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
 
         label {
-            display: block; color: var(--arcade-yellow); font-size: 0.7rem;
-            margin-bottom: 8px; letter-spacing: 2px;
+            display: block;
+            color: var(--neon-yellow);
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--neon-yellow);
         }
 
         input, select {
-            width: 100%; padding: 12px; background: #000;
-            border: 3px solid var(--arcade-cyan); color: var(--arcade-green);
-            font-family: 'Press Start 2P', monospace; font-size: 0.7rem;
+            width: 100%;
+            padding: 15px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            box-shadow: 
+                inset 0 0 20px rgba(0,0,0,0.5),
+                0 0 15px rgba(0,245,255,0.2);
         }
 
         input:focus, select:focus {
-            outline: none; border-color: var(--arcade-yellow);
-            box-shadow: 0 0 20px var(--arcade-yellow);
+            outline: none;
+            border-color: var(--neon-pink);
+            box-shadow: 
+                inset 0 0 20px rgba(0,0,0,0.5),
+                0 0 30px rgba(255,0,110,0.5);
         }
 
         button {
-            background: var(--arcade-green); color: #000;
-            border: 4px solid var(--arcade-green); padding: 15px 30px;
-            font-family: 'Press Start 2P', monospace; font-size: 0.7rem;
-            cursor: pointer; transition: all 0.2s; letter-spacing: 2px;
-            box-shadow: 4px 4px 0 rgba(0,255,0,0.5);
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+            color: #fff;
+            border: none;
+            padding: 18px 35px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            box-shadow: 
+                0 5px 25px rgba(255,0,110,0.5),
+                inset 0 0 20px rgba(255,255,255,0.1);
+            text-transform: uppercase;
         }
 
         button:hover {
-            background: var(--arcade-yellow); border-color: var(--arcade-yellow);
-            transform: translate(-2px, -2px); box-shadow: 6px 6px 0 rgba(255,255,0,0.5);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 10px 40px rgba(255,0,110,0.8),
+                inset 0 0 30px rgba(255,255,255,0.2);
         }
 
         button:active {
-            transform: translate(0, 0); box-shadow: 2px 2px 0 rgba(0,255,0,0.5);
+            transform: translateY(-1px);
         }
-
-        .transaction-list { max-height: 400px; overflow-y: auto; }
 
         .transaction-item {
-            background: #111; border: 2px solid var(--arcade-green);
-            padding: 15px; margin-bottom: 10px; display: flex;
-            justify-content: space-between; align-items: center; font-size: 0.6rem;
-        }
-
-        .transaction-item:hover { border-color: var(--arcade-yellow); background: #222; }
-
-        .damage-indicator {
-            position: fixed; font-size: 2rem; color: var(--arcade-red);
-            text-shadow: 3px 3px 0 #000; pointer-events: none;
-            z-index: 9999; animation: damageRise 1.5s ease-out forwards;
-        }
-
-        @keyframes damageRise {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
-        }
-
-        .modal {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.95);
-            z-index: 10000; justify-content: center; align-items: center;
-        }
-
-        .modal.active { display: flex; animation: pixelFade 0.3s; }
-
-        .modal-content {
-            background: #000; border: 4px solid var(--arcade-yellow);
-            padding: 40px; max-width: 500px; text-align: center;
-            animation: modalBounce 0.5s;
-        }
-
-        @keyframes modalBounce {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .modal-title {
-            font-size: 1.5rem; color: var(--arcade-yellow);
-            margin-bottom: 20px; text-shadow: 3px 3px 0 var(--arcade-red);
-        }
-
-        .modal-message {
-            font-size: 0.8rem; color: var(--arcade-cyan);
-            margin-bottom: 30px; line-height: 1.8;
-        }
-
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px; margin-bottom: 20px;
-        }
-
-        .stat-box {
-            background: #111; border: 3px solid var(--arcade-cyan);
-            padding: 15px; text-align: center;
-        }
-
-        .stat-label {
-            font-size: 0.6rem; color: var(--arcade-yellow); margin-bottom: 10px;
-        }
-
-        .stat-value { font-size: 1.2rem; color: var(--arcade-green); }
-
-        .history-month {
-            background: #111; border: 3px solid var(--arcade-magenta);
-            padding: 20px; margin-bottom: 20px;
-        }
-
-        .history-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; padding-bottom: 15px;
-            border-bottom: 2px solid var(--arcade-magenta);
-        }
-
-        .history-result {
-            font-size: 1rem; padding: 10px; border: 2px solid;
-        }
-
-        .history-result.victory {
-            background: rgba(0,255,0,0.1);
-            border-color: var(--arcade-green);
-            color: var(--arcade-green);
-        }
-
-        .history-result.defeat {
-            background: rgba(255,0,0,0.1);
-            border-color: var(--arcade-red);
-            color: var(--arcade-red);
-        }
-
-        .category-spending {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px; margin-top: 15px;
-        }
-
-        .category-item {
-            background: #000; border: 2px solid var(--arcade-cyan);
-            padding: 10px; font-size: 0.6rem;
-        }
-
-        .budget-setting-item {
-            background: #111; border: 2px solid var(--arcade-green);
-            padding: 15px; margin-bottom: 10px; display: grid;
-            grid-template-columns: 1fr 120px; gap: 15px;
-            align-items: center; font-size: 0.6rem;
-        }
-
-        .budget-setting-label { color: var(--arcade-yellow); }
-
-        .budget-setting-input {
-            padding: 8px; background: #000; border: 2px solid var(--arcade-cyan);
-            color: var(--arcade-green); font-family: 'Press Start 2P', monospace;
-            font-size: 0.6rem; text-align: center;
-        }
-
-        .achievement {
-            background: rgba(0,255,0,0.1);
-            border: 3px solid var(--arcade-green);
+            background: rgba(0,0,0,0.6);
+            border-left: 4px solid var(--neon-cyan);
             padding: 20px;
             margin-bottom: 15px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 20px;
             transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0,245,255,0.2);
+        }
+
+        .transaction-item:hover {
+            background: rgba(0,245,255,0.1);
+            border-left-color: var(--neon-pink);
+            transform: translateX(5px);
+            box-shadow: 0 0 25px rgba(0,245,255,0.4);
+        }
+
+        .achievement {
+            background: linear-gradient(135deg, rgba(0,245,255,0.1), rgba(131,56,236,0.1));
+            border: 2px solid var(--neon-cyan);
+            padding: 25px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0,245,255,0.3);
         }
 
         .achievement:hover {
-            background: rgba(0,255,0,0.2);
-            transform: translateX(5px);
+            background: linear-gradient(135deg, rgba(0,245,255,0.2), rgba(131,56,236,0.2));
+            transform: translateX(8px);
+            box-shadow: 0 0 35px rgba(0,245,255,0.5);
         }
 
         .achievement.locked {
-            background: rgba(100,100,100,0.1);
-            border-color: #666;
-            opacity: 0.4;
+            opacity: 0.3;
+            filter: grayscale(100%);
         }
 
         .achievement-icon {
-            font-size: 2.5rem;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .achievement-content {
-            flex: 1;
+            font-size: 3rem;
+            min-width: 60px;
         }
 
         .achievement-name {
-            font-size: 0.9rem;
-            color: var(--arcade-yellow);
+            font-size: 1.2rem;
+            color: var(--neon-pink);
+            font-weight: 700;
             margin-bottom: 8px;
-            font-weight: bold;
+            text-shadow: 0 0 15px var(--neon-pink);
         }
 
         .achievement-desc {
-            font-size: 0.6rem;
-            color: var(--arcade-cyan);
-            line-height: 1.5;
+            color: var(--neon-cyan);
+            font-size: 0.9rem;
         }
 
-        .achievement-status {
-            font-size: 1.5rem;
-            min-width: 40px;
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, var(--dark-bg), var(--darker-bg));
+            border: 4px solid var(--neon-pink);
+            padding: 50px;
+            max-width: 600px;
             text-align: center;
+            box-shadow: 
+                0 0 100px rgba(255,0,110,0.8),
+                inset 0 0 50px rgba(255,0,110,0.2);
+            animation: modalPop 0.5s;
         }
 
-        .insert-coin {
-            position: fixed; bottom: 20px; right: 20px; background: #000;
-            border: 3px solid var(--arcade-yellow); padding: 10px 20px;
-            font-size: 0.6rem; color: var(--arcade-yellow);
-            animation: coinBlink 1.5s infinite; z-index: 100;
+        @keyframes modalPop {
+            0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+            50% { transform: scale(1.05) rotate(2deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
-        @keyframes coinBlink {
-            0%, 49%, 51%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        .modal-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--neon-pink);
+            margin-bottom: 25px;
+            text-shadow: 0 0 30px var(--neon-pink);
+        }
+
+        .modal-message {
+            font-size: 1.2rem;
+            color: var(--neon-cyan);
+            margin-bottom: 35px;
+            line-height: 1.8;
+        }
+
+        .damage-indicator {
+            position: fixed;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--neon-red);
+            text-shadow: 
+                0 0 20px var(--neon-red),
+                3px 3px 0 #000;
+            pointer-events: none;
+            z-index: 9999;
+            animation: damageFloat 1.5s ease-out forwards;
+        }
+
+        @keyframes damageFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
+        }
+
+        .category-item {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid var(--neon-purple);
+            padding: 15px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 0 15px rgba(131,56,236,0.3);
+        }
+
+        .history-month {
+            background: rgba(0,0,0,0.7);
+            border: 2px solid var(--neon-pink);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 25px rgba(255,0,110,0.3);
+        }
+
+        .history-result {
+            padding: 12px 25px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 2px solid;
+        }
+
+        .history-result.victory {
+            background: rgba(0,245,255,0.2);
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        .history-result.defeat {
+            background: rgba(255,0,110,0.2);
+            border-color: var(--neon-red);
+            color: var(--neon-red);
+            box-shadow: 0 0 20px var(--neon-red);
+        }
+
+        .category-manager {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, var(--neon-red), #aa0030);
+            padding: 12px 20px;
+            font-size: 0.9rem;
         }
 
         @media (max-width: 768px) {
-            h1 { font-size: 1.2rem; }
-            .subtitle { font-size: 0.6rem; }
+            h1 { font-size: 2.5rem; }
+            .monster-container { width: 200px; height: 200px; }
             .health-bars { grid-template-columns: 1fr; }
-            .pixel-character { width: 180px; height: 180px; }
             .tabs { flex-direction: column; }
+            .category-manager { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="scanlines"></div>
-    <div class="crt-effect"></div>
+    <div class="vhs-overlay"></div>
+    <div class="vignette"></div>
     
     <div class="container">
-        <div class="arcade-header">
+        <header>
             <h1>BUDGET NEMESIS</h1>
-            <p class="subtitle">ARCADE EDITION</p>
-        </div>
+            <p class="subtitle">FINANCIAL HORROR GAME</p>
+        </header>
 
-        <div class="month-display" id="monthDisplay">LOADING...</div>
+        <div class="month-banner" id="monthDisplay">LOADING...</div>
 
         <div class="stats-grid">
-            <div class="stat-box">
+            <div class="stat-card">
                 <div class="stat-label">VICTORIES</div>
                 <div class="stat-value" id="victories">0</div>
             </div>
-            <div class="stat-box">
+            <div class="stat-card">
                 <div class="stat-label">DEFEATS</div>
                 <div class="stat-value" id="defeats">0</div>
             </div>
-            <div class="stat-box">
+            <div class="stat-card">
                 <div class="stat-label">WIN STREAK</div>
                 <div class="stat-value" id="winStreak">0</div>
             </div>
-            <div class="stat-box">
+            <div class="stat-card">
                 <div class="stat-label">DAYS LEFT</div>
                 <div class="stat-value" id="daysLeft">--</div>
             </div>
@@ -648,41 +823,41 @@
         <div id="battle" class="tab-content active">
             <div class="battle-screen">
                 <div class="health-bars">
-                    <div class="player-side">
-                        <div class="character-label">YOU - BUDGET WARRIOR</div>
-                        <div class="health-bar-container">
-                            <div class="health-bar-fill player-health" id="playerHealth" style="width: 100%">
+                    <div>
+                        <div class="health-label player-label">YOU - BUDGET WARRIOR</div>
+                        <div class="health-bar-container player-bar">
+                            <div class="health-fill player-health" id="playerHealth" style="width: 100%">
                                 HP: 100%
                             </div>
                         </div>
                     </div>
-                    <div class="nemesis-side">
-                        <div class="character-label">OVERSPENDING NEMESIS</div>
-                        <div class="health-bar-container">
-                            <div class="health-bar-fill nemesis-health" id="nemesisHealth" style="width: 100%">
+                    <div>
+                        <div class="health-label nemesis-label">OVERSPENDING NEMESIS</div>
+                        <div class="health-bar-container nemesis-bar">
+                            <div class="health-fill nemesis-health" id="nemesisHealth" style="width: 100%">
                                 HP: 100%
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="pixel-character">
-                    <div class="nemesis-sprite" id="nemesisSprite">
-                        <div class="horn-left"></div>
-                        <div class="horn-right"></div>
-                        <div class="spike-left spike-left-1"></div>
-                        <div class="spike-left spike-left-2"></div>
-                        <div class="spike-left spike-left-3"></div>
-                        <div class="spike-right spike-right-1"></div>
-                        <div class="spike-right spike-right-2"></div>
-                        <div class="spike-right spike-right-3"></div>
+                <div class="monster-container">
+                    <div class="monster" id="monster">
+                        <div class="horn horn-left"></div>
+                        <div class="horn horn-right"></div>
+                        <div class="spike spike-left spike-left-1"></div>
+                        <div class="spike spike-left spike-left-2"></div>
+                        <div class="spike spike-left spike-left-3"></div>
+                        <div class="spike spike-right spike-right-1"></div>
+                        <div class="spike spike-right spike-right-2"></div>
+                        <div class="spike spike-right spike-right-3"></div>
                         <div class="eyebrow-left"></div>
                         <div class="eyebrow-right"></div>
-                        <div class="eye-container">
+                        <div class="eyes">
                             <div class="eye"><div class="pupil"></div></div>
                             <div class="eye"><div class="pupil"></div></div>
                         </div>
-                        <div class="fang-row">
+                        <div class="fangs">
                             <div class="fang"></div>
                             <div class="fang"></div>
                             <div class="fang"></div>
@@ -695,29 +870,16 @@
             </div>
 
             <div class="panel">
-                <div class="input-group">
-                    <label>CATEGORY</label>
-                    <select id="category">
-                        <option value="Shopping">SHOPPING</option>
-                        <option value="Dining">DINING</option>
-                        <option value="Groceries">GROCERIES</option>
-                        <option value="Transportation">TRANSPORT</option>
-                        <option value="Home Improvement">HOME IMPROVE</option>
-                        <option value="Healthcare">HEALTHCARE</option>
-                        <option value="Professional">PROFESSIONAL</option>
-                        <option value="Utilities">UTILITIES</option>
-                        <option value="Miscellaneous">MISC</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>AMOUNT $</label>
-                    <input type="number" id="amount" placeholder="0.00" step="0.01">
-                </div>
-                <div class="input-group">
-                    <label>DESCRIPTION</label>
-                    <input type="text" id="description" placeholder="WHAT DID YOU BUY?">
-                </div>
-                <button onclick="addTransaction()" style="width: 100%; margin-top: 10px;">
+                <label>CATEGORY</label>
+                <select id="category"></select>
+
+                <label>AMOUNT $</label>
+                <input type="number" id="amount" placeholder="0.00" step="0.01">
+
+                <label>DESCRIPTION</label>
+                <input type="text" id="description" placeholder="WHAT DID YOU BUY?">
+
+                <button onclick="addTransaction()" style="width: 100%;">
                     ENTER SPENDING
                 </button>
             </div>
@@ -725,16 +887,16 @@
 
         <div id="transactions" class="tab-content">
             <div class="panel">
-                <h2 style="color: var(--arcade-yellow); margin-bottom: 20px; font-size: 1rem;">
+                <h2 style="color: var(--neon-pink); margin-bottom: 25px; font-size: 1.5rem; text-shadow: 0 0 20px var(--neon-pink);">
                     CURRENT MONTH LOG
                 </h2>
-                <div class="transaction-list" id="transactionList"></div>
+                <div id="transactionList"></div>
             </div>
         </div>
 
         <div id="achievements" class="tab-content">
             <div class="panel">
-                <h2 style="color: var(--arcade-yellow); margin-bottom: 20px; font-size: 1rem;">
+                <h2 style="color: var(--neon-pink); margin-bottom: 25px; font-size: 1.5rem; text-shadow: 0 0 20px var(--neon-pink);">
                     ACHIEVEMENTS UNLOCKED
                 </h2>
                 <div id="achievementList"></div>
@@ -743,7 +905,7 @@
 
         <div id="history" class="tab-content">
             <div class="panel">
-                <h2 style="color: var(--arcade-yellow); margin-bottom: 20px; font-size: 1rem;">
+                <h2 style="color: var(--neon-pink); margin-bottom: 25px; font-size: 1.5rem; text-shadow: 0 0 20px var(--neon-pink);">
                     BATTLE HISTORY
                 </h2>
                 <div id="historyList"></div>
@@ -752,43 +914,41 @@
 
         <div id="settings" class="tab-content">
             <div class="panel">
-                <h2 style="color: var(--arcade-yellow); margin-bottom: 20px; font-size: 1rem;">
-                    BUDGET CONFIG
+                <h2 style="color: var(--neon-pink); margin-bottom: 25px; font-size: 1.5rem; text-shadow: 0 0 20px var(--neon-pink);">
+                    CATEGORY MANAGER
                 </h2>
-                <div id="budgetSettings"></div>
-                <button onclick="saveBudgetSettings()" style="margin-top: 20px; width: 100%;">
-                    SAVE BUDGETS
+                <div id="categoryManager"></div>
+                <button onclick="addNewCategory()" style="width: 100%; margin-top: 20px;">
+                    + ADD NEW CATEGORY
                 </button>
             </div>
 
-            <div class="panel" style="border-color: var(--arcade-red);">
-                <h2 style="color: var(--arcade-red); margin-bottom: 20px; font-size: 1rem;">
+            <div class="panel" style="border-color: var(--neon-red);">
+                <h2 style="color: var(--neon-red); margin-bottom: 25px; font-size: 1.5rem; text-shadow: 0 0 20px var(--neon-red);">
                     DANGER ZONE
                 </h2>
-                <button onclick="resetCurrentMonth()" style="background: var(--arcade-yellow); border-color: var(--arcade-yellow); margin-bottom: 10px; width: 100%;">
+                <button onclick="resetCurrentMonth()" style="background: linear-gradient(135deg, var(--neon-yellow), var(--neon-purple)); margin-bottom: 15px; width: 100%;">
                     RESET THIS MONTH
                 </button>
-                <button onclick="resetAllData()" style="background: var(--arcade-red); border-color: var(--arcade-red); width: 100%;">
+                <button onclick="resetAllData()" style="background: linear-gradient(135deg, var(--neon-red), #aa0030); width: 100%;">
                     RESET ALL DATA
                 </button>
             </div>
 
             <div class="panel">
-                <h2 style="color: var(--arcade-yellow); margin-bottom: 20px; font-size: 1rem;">
+                <h2 style="color: var(--neon-cyan); margin-bottom: 25px; font-size: 1.5rem; text-shadow: 0 0 20px var(--neon-cyan);">
                     DATA BACKUP
                 </h2>
-                <button onclick="exportData()" style="background: var(--arcade-cyan); border-color: var(--arcade-cyan); margin-bottom: 10px; width: 100%;">
+                <button onclick="exportData()" style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); margin-bottom: 15px; width: 100%;">
                     EXPORT DATA
                 </button>
-                <button onclick="document.getElementById('importFile').click()" style="background: var(--arcade-magenta); border-color: var(--arcade-magenta); width: 100%;">
+                <button onclick="document.getElementById('importFile').click()" style="background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); width: 100%;">
                     IMPORT DATA
                 </button>
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
             </div>
         </div>
     </div>
-
-    <div class="insert-coin">INSERT COIN</div>
 
     <div class="modal" id="victoryModal">
         <div class="modal-content">
@@ -799,8 +959,8 @@
     </div>
 
     <div class="modal" id="defeatModal">
-        <div class="modal-content" style="border-color: var(--arcade-red);">
-            <h2 class="modal-title" style="color: var(--arcade-red);">GAME OVER</h2>
+        <div class="modal-content" style="border-color: var(--neon-red);">
+            <h2 class="modal-title" style="color: var(--neon-red); text-shadow: 0 0 30px var(--neon-red);">GAME OVER</h2>
             <p class="modal-message" id="defeatMessage"></p>
             <button onclick="closeModal()">CONTINUE</button>
         </div>
@@ -850,12 +1010,11 @@
         const taunts = [
             "BUY MORE STUFF!",
             "YOU'RE BROKE!",
-            "NICE TRY LOSER!",
+            "NICE TRY!",
             "GIMME YOUR MONEY!",
-            "OUCH! THAT HURT!",
+            "WEAK SAUCE!",
             "IS THAT ALL?",
-            "WEAK ATTACK!",
-            "HAHA SUCKER!",
+            "HA HA HA!",
             "SPEND MORE!",
             "I'M WINNING!"
         ];
@@ -869,6 +1028,7 @@
             updateBattleScreen();
             updateAchievements();
             updateHistory();
+            updateCategoryDropdown();
         }
 
         function getCurrentMonthKey() {
@@ -984,7 +1144,7 @@
 
         function showTaunt(message) {
             const bubble = document.getElementById('tauntBubble');
-            bubble.className = 'taunt-bubble';
+            bubble.className = 'taunt';
             bubble.textContent = message;
             
             setTimeout(() => {
@@ -1009,8 +1169,13 @@
             const amount = parseFloat(document.getElementById('amount').value);
             const description = document.getElementById('description').value;
 
+            if (!category) {
+                alert('Please select a category!');
+                return;
+            }
+
             if (!amount || amount <= 0) {
-                alert('INVALID AMOUNT');
+                alert('Please enter a valid amount!');
                 return;
             }
 
@@ -1023,9 +1188,12 @@
             };
 
             gameState.currentTransactions.unshift(transaction);
-            gameState.currentSpending[category] = (gameState.currentSpending[category] || 0) + amount;
+            
+            if (!gameState.currentSpending[category]) {
+                gameState.currentSpending[category] = 0;
+            }
+            gameState.currentSpending[category] += amount;
 
-            // Track logging streak
             const today = new Date().toDateString();
             if (gameState.lastLogDate !== today) {
                 const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -1036,8 +1204,6 @@
                 }
                 gameState.lastLogDate = today;
                 gameState.maxConsecutiveLogDays = Math.max(gameState.maxConsecutiveLogDays, gameState.consecutiveLogDays);
-                
-                // Reset zero spend streak since they spent today
                 gameState.currentZeroSpendStreak = 0;
             }
 
@@ -1048,9 +1214,9 @@
             const taunt = taunts[Math.floor(Math.random() * taunts.length)];
             showTaunt(taunt);
 
-            document.getElementById('nemesisSprite').classList.add('damaged');
+            document.getElementById('monster').classList.add('damaged');
             setTimeout(() => {
-                document.getElementById('nemesisSprite').classList.remove('damaged');
+                document.getElementById('monster').classList.remove('damaged');
             }, 500);
 
             calculateHealth();
@@ -1063,52 +1229,56 @@
             document.getElementById('description').value = '';
         }
 
+        function checkGameOver() {
+            if (gameState.playerHealth <= 0) {
+                showModal('defeatModal', 
+                    'GAME OVER!',
+                    'YOU HAVE BEEN DEFEATED BY THE NEMESIS!<br><br>YOU OVERSPENT YOUR BUDGET!');
+            } else if (gameState.nemesisHealth <= 0) {
+                showModal('victoryModal',
+                    'VICTORY!',
+                    'YOU DEFEATED THE OVERSPENDING NEMESIS!<br><br>EXCELLENT BUDGET CONTROL!');
+            }
+        }
+
         function checkAchievements() {
             const achievements = gameState.achievements;
 
-            // First Entry
             if (gameState.currentTransactions.length >= 1 && !achievements['First Entry'].unlocked) {
                 achievements['First Entry'].unlocked = true;
                 showAchievementUnlock('First Entry');
             }
 
-            // Daily Logger - 7 days in a row
             if (gameState.consecutiveLogDays >= 7 && !achievements['Daily Logger'].unlocked) {
                 achievements['Daily Logger'].unlocked = true;
                 showAchievementUnlock('Daily Logger');
             }
 
-            // Dedicated Tracker - 30 days in a row
             if (gameState.consecutiveLogDays >= 30 && !achievements['Dedicated Tracker'].unlocked) {
                 achievements['Dedicated Tracker'].unlocked = true;
                 showAchievementUnlock('Dedicated Tracker');
             }
 
-            // No Spend Day
             if (gameState.currentZeroSpendStreak >= 1 && !achievements['No Spend Day'].unlocked) {
                 achievements['No Spend Day'].unlocked = true;
                 showAchievementUnlock('No Spend Day');
             }
 
-            // No Spend Week - 7 zero spend days total
             if (gameState.zeroSpendDays >= 7 && !achievements['No Spend Week'].unlocked) {
                 achievements['No Spend Week'].unlocked = true;
                 showAchievementUnlock('No Spend Week');
             }
 
-            // Budget Master - stay under budget for one month
             if (gameState.victories >= 1 && !achievements['Budget Master'].unlocked) {
                 achievements['Budget Master'].unlocked = true;
                 showAchievementUnlock('Budget Master');
             }
 
-            // Budget Warrior - 3 months in a row
             if (gameState.winStreak >= 3 && !achievements['Budget Warrior'].unlocked) {
                 achievements['Budget Warrior'].unlocked = true;
                 showAchievementUnlock('Budget Warrior');
             }
 
-            // Budget Legend - 6 months in a row
             if (gameState.winStreak >= 6 && !achievements['Budget Legend'].unlocked) {
                 achievements['Budget Legend'].unlocked = true;
                 showAchievementUnlock('Budget Legend');
@@ -1135,11 +1305,11 @@
                 item.className = 'achievement' + (achievement.unlocked ? '' : ' locked');
                 item.innerHTML = `
                     <div class="achievement-icon">${achievement.icon}</div>
-                    <div class="achievement-content">
+                    <div style="flex: 1;">
                         <div class="achievement-name">${achievement.name}</div>
                         <div class="achievement-desc">${achievement.desc}</div>
                     </div>
-                    <div class="achievement-status">
+                    <div style="font-size: 2rem;">
                         ${achievement.unlocked ? '✅' : '🔒'}
                     </div>
                 `;
@@ -1148,7 +1318,6 @@
         }
 
         function checkDailyProgress() {
-            // Check if we should count a zero-spend day
             const today = new Date().toDateString();
             const lastTransactionToday = gameState.currentTransactions.some(t => {
                 return new Date(t.date).toDateString() === today;
@@ -1165,24 +1334,12 @@
             }
         }
 
-        function checkGameOver() {
-            if (gameState.playerHealth <= 0) {
-                showModal('defeatModal', 
-                    'GAME OVER!',
-                    'YOU HAVE BEEN DEFEATED BY THE NEMESIS!<br><br>YOU OVERSPENT YOUR BUDGET!');
-            } else if (gameState.nemesisHealth <= 0) {
-                showModal('victoryModal',
-                    'VICTORY!',
-                    'YOU DEFEATED THE OVERSPENDING NEMESIS!<br><br>EXCELLENT BUDGET CONTROL!');
-            }
-        }
-
         function updateTransactionList() {
             const list = document.getElementById('transactionList');
             list.innerHTML = '';
 
             if (gameState.currentTransactions.length === 0) {
-                list.innerHTML = '<p style="color: var(--arcade-yellow); text-align: center; padding: 20px; font-size: 0.7rem;">NO TRANSACTIONS THIS MONTH</p>';
+                list.innerHTML = '<p style="color: var(--neon-yellow); text-align: center; padding: 30px; font-size: 1.1rem;">NO TRANSACTIONS THIS MONTH</p>';
                 return;
             }
 
@@ -1191,11 +1348,11 @@
                 item.className = 'transaction-item';
                 item.innerHTML = `
                     <div>
-                        <div style="color: var(--arcade-yellow); margin-bottom: 5px;">${t.category}</div>
-                        <div style="color: var(--arcade-cyan);">${t.description || 'NO DESCRIPTION'}</div>
-                        <div style="color: var(--arcade-green); margin-top: 5px;">${new Date(t.date).toLocaleDateString()}</div>
+                        <div style="font-weight: 700; color: var(--neon-pink); margin-bottom: 8px; font-size: 1.1rem;">${t.category}</div>
+                        <div style="color: var(--neon-cyan); margin-bottom: 5px;">${t.description || 'No description'}</div>
+                        <div style="color: var(--neon-purple); font-size: 0.9rem;">${new Date(t.date).toLocaleDateString()}</div>
                     </div>
-                    <div style="color: var(--arcade-red); font-size: 0.8rem;">
+                    <div style="color: var(--neon-red); font-size: 1.8rem; font-weight: 700; text-shadow: 0 0 15px var(--neon-red);">
                         -$${t.amount.toFixed(2)}
                     </div>
                 `;
@@ -1205,10 +1362,12 @@
 
         function updateHistory() {
             const list = document.getElementById('historyList');
+            if (!list) return;
+            
             list.innerHTML = '';
 
             if (gameState.history.length === 0) {
-                list.innerHTML = '<p style="color: var(--arcade-yellow); text-align: center; padding: 20px; font-size: 0.7rem;">NO BATTLE HISTORY YET</p>';
+                list.innerHTML = '<p style="color: var(--neon-yellow); text-align: center; padding: 30px; font-size: 1.1rem;">NO BATTLE HISTORY YET</p>';
                 return;
             }
 
@@ -1221,34 +1380,140 @@
                 
                 let categoryHTML = '';
                 Object.entries(entry.spending).forEach(([cat, spent]) => {
-                    const budget = entry.totalBudget ? (gameState.budgets[cat] || 0) : 0;
+                    const budget = gameState.budgets[cat] || 0;
                     categoryHTML += `
                         <div class="category-item">
-                            <div style="color: var(--arcade-yellow); margin-bottom: 5px;">${cat}</div>
-                            <div style="color: var(--arcade-cyan);">$${spent.toFixed(2)} / $${budget.toFixed(2)}</div>
+                            <div style="color: var(--neon-yellow); margin-bottom: 5px; font-weight: 700;">${cat}</div>
+                            <div style="color: var(--neon-cyan);">$${spent.toFixed(2)} / $${budget.toFixed(2)}</div>
                         </div>
                     `;
                 });
                 
                 historyItem.innerHTML = `
-                    <div class="history-header">
-                        <div style="color: var(--arcade-yellow); font-size: 0.8rem;">${monthName.toUpperCase()}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid var(--neon-pink);">
+                        <div style="color: var(--neon-pink); font-size: 1.3rem; font-weight: 700; text-shadow: 0 0 15px var(--neon-pink);">${monthName.toUpperCase()}</div>
                         <div class="history-result ${entry.result}">
                             ${entry.result === 'victory' ? 'VICTORY' : 'DEFEAT'}
                         </div>
                     </div>
-                    <div style="font-size: 0.7rem; margin-bottom: 15px;">
-                        <div style="color: var(--arcade-cyan);">SPENT: $${entry.totalSpent.toFixed(2)}</div>
-                        <div style="color: var(--arcade-yellow);">BUDGET: $${entry.totalBudget.toFixed(2)}</div>
-                        <div style="color: ${entry.result === 'victory' ? 'var(--arcade-green)' : 'var(--arcade-red)'};">
+                    <div style="margin-bottom: 20px;">
+                        <div style="color: var(--neon-cyan); margin-bottom: 5px;">SPENT: $${entry.totalSpent.toFixed(2)}</div>
+                        <div style="color: var(--neon-yellow); margin-bottom: 5px;">BUDGET: $${entry.totalBudget.toFixed(2)}</div>
+                        <div style="color: ${entry.result === 'victory' ? 'var(--neon-cyan)' : 'var(--neon-red)'}; font-weight: 700;">
                             ${entry.result === 'victory' ? 'UNDER' : 'OVER'} BY: $${Math.abs(entry.totalBudget - entry.totalSpent).toFixed(2)}
                         </div>
                     </div>
-                    <div class="category-spending">${categoryHTML}</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        ${categoryHTML}
+                    </div>
                 `;
                 
                 list.appendChild(historyItem);
             });
+        }
+
+        function updateCategoryDropdown() {
+            const select = document.getElementById('category');
+            select.innerHTML = '<option value="">-- SELECT CATEGORY --</option>';
+            
+            Object.keys(gameState.budgets).sort().forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat.toUpperCase();
+                select.appendChild(option);
+            });
+        }
+
+        function updateCategoryManager() {
+            const container = document.getElementById('categoryManager');
+            container.innerHTML = '';
+
+            Object.entries(gameState.budgets).sort().forEach(([category, budget]) => {
+                const item = document.createElement('div');
+                item.className = 'category-manager';
+                item.innerHTML = `
+                    <input type="text" value="${category}" id="cat-name-${category}" placeholder="Category Name">
+                    <input type="number" value="${budget}" id="cat-budget-${category}" min="0" step="10" placeholder="Budget">
+                    <button class="delete-btn" onclick="deleteCategory('${category}')">DELETE</button>
+                `;
+                container.appendChild(item);
+            });
+
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = 'SAVE CHANGES';
+            saveBtn.style.width = '100%';
+            saveBtn.style.marginTop = '20px';
+            saveBtn.onclick = saveCategoryChanges;
+            container.appendChild(saveBtn);
+        }
+
+        function addNewCategory() {
+            const name = prompt('Enter category name:');
+            if (!name) return;
+            
+            const cleanName = name.trim();
+            if (gameState.budgets[cleanName]) {
+                alert('Category already exists!');
+                return;
+            }
+            
+            const budget = parseFloat(prompt('Enter monthly budget:'));
+            if (!budget || budget <= 0) {
+                alert('Invalid budget amount!');
+                return;
+            }
+            
+            gameState.budgets[cleanName] = budget;
+            gameState.currentSpending[cleanName] = 0;
+            
+            saveGameState();
+            updateCategoryManager();
+            updateCategoryDropdown();
+        }
+
+        function deleteCategory(category) {
+            if (!confirm(`Delete category "${category}"? This will remove all associated data!`)) {
+                return;
+            }
+            
+            delete gameState.budgets[category];
+            delete gameState.currentSpending[category];
+            
+            saveGameState();
+            updateCategoryManager();
+            updateCategoryDropdown();
+        }
+
+        function saveCategoryChanges() {
+            const newBudgets = {};
+            const newSpending = {};
+            
+            Object.keys(gameState.budgets).forEach(oldName => {
+                const nameInput = document.getElementById(`cat-name-${oldName}`);
+                const budgetInput = document.getElementById(`cat-budget-${oldName}`);
+                
+                if (!nameInput || !budgetInput) return;
+                
+                const newName = nameInput.value.trim();
+                const newBudget = parseFloat(budgetInput.value);
+                
+                if (!newName || !newBudget || newBudget <= 0) {
+                    alert(`Invalid data for category: ${oldName}`);
+                    return;
+                }
+                
+                newBudgets[newName] = newBudget;
+                newSpending[newName] = gameState.currentSpending[oldName] || 0;
+            });
+            
+            gameState.budgets = newBudgets;
+            gameState.currentSpending = newSpending;
+            
+            calculateHealth();
+            saveGameState();
+            updateCategoryManager();
+            updateCategoryDropdown();
+            alert('Categories updated successfully!');
         }
 
         function switchTab(tabName) {
@@ -1265,73 +1530,34 @@
                 updateHistory();
             }
             if (tabName === 'settings') {
-                updateBudgetSettings();
-            }
-        }
-
-        function updateBudgetSettings() {
-            const container = document.getElementById('budgetSettings');
-            container.innerHTML = '';
-
-            Object.entries(gameState.budgets).forEach(([category, budget]) => {
-                const item = document.createElement('div');
-                item.className = 'budget-setting-item';
-                item.innerHTML = `
-                    <div class="budget-setting-label">${category}</div>
-                    <input type="number" 
-                           class="budget-setting-input" 
-                           id="budget-${category}" 
-                           value="${budget}" 
-                           min="0" 
-                           step="10">
-                `;
-                container.appendChild(item);
-            });
-        }
-
-        function saveBudgetSettings() {
-            let changed = false;
-            Object.keys(gameState.budgets).forEach(category => {
-                const input = document.getElementById(`budget-${category}`);
-                const newValue = parseFloat(input.value);
-                if (newValue && newValue > 0 && newValue !== gameState.budgets[category]) {
-                    gameState.budgets[category] = newValue;
-                    changed = true;
-                }
-            });
-
-            if (changed) {
-                calculateHealth();
-                saveGameState();
-                showModal('victoryModal', 'SETTINGS SAVED!', 'BUDGET CONFIGURATION UPDATED!');
+                updateCategoryManager();
             }
         }
 
         function resetCurrentMonth() {
-            if (confirm('RESET THIS MONTH? ALL CURRENT DATA WILL BE LOST!')) {
-                gameState.currentSpending = {};
-                gameState.currentTransactions = [];
-                gameState.playerHealth = 100;
-                gameState.nemesisHealth = 100;
-                
-                Object.keys(gameState.budgets).forEach(cat => {
-                    gameState.currentSpending[cat] = 0;
-                });
-                
-                saveGameState();
-                updateDisplay();
-                updateBattleScreen();
-                showModal('victoryModal', 'MONTH RESET!', 'NEW BATTLE BEGINS!');
-            }
+            if (!confirm('RESET THIS MONTH? ALL CURRENT DATA WILL BE LOST!')) return;
+            
+            gameState.currentSpending = {};
+            gameState.currentTransactions = [];
+            gameState.playerHealth = 100;
+            gameState.nemesisHealth = 100;
+            
+            Object.keys(gameState.budgets).forEach(cat => {
+                gameState.currentSpending[cat] = 0;
+            });
+            
+            saveGameState();
+            updateDisplay();
+            updateBattleScreen();
+            showModal('victoryModal', 'MONTH RESET!', 'NEW BATTLE BEGINS!');
         }
 
         function resetAllData() {
-            if (confirm('DELETE ALL DATA? THIS CANNOT BE UNDONE!')) {
-                if (confirm('ARE YOU SURE? ALL HISTORY WILL BE LOST!')) {
-                    localStorage.removeItem('budgetNemesisState');
-                    location.reload();
-                }
-            }
+            if (!confirm('DELETE ALL DATA? THIS CANNOT BE UNDONE!')) return;
+            if (!confirm('ARE YOU ABSOLUTELY SURE? ALL HISTORY WILL BE LOST!')) return;
+            
+            localStorage.removeItem('budgetNemesisState');
+            location.reload();
         }
 
         function exportData() {
@@ -1359,7 +1585,9 @@
                     saveGameState();
                     updateDisplay();
                     updateBattleScreen();
+                    updateAchievements();
                     updateHistory();
+                    updateCategoryDropdown();
                     showModal('victoryModal', 'DATA IMPORTED!', 'BACKUP RESTORED SUCCESSFULLY!');
                 } catch (error) {
                     alert('ERROR: INVALID BACKUP FILE!');
@@ -1372,7 +1600,9 @@
 
         function showModal(modalId, title, message) {
             document.getElementById(modalId).classList.add('active');
+            const titleEl = document.getElementById(modalId).querySelector('.modal-title');
             const messageEl = document.getElementById(modalId === 'victoryModal' ? 'victoryMessage' : 'defeatMessage');
+            if (title) titleEl.textContent = title;
             messageEl.innerHTML = message;
         }
 
